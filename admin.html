@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+
+  <style>
+    /* ===== تخطيط لوحة التحكم ===== */
+    .adm {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      min-height: 100vh;
+    }
+
+    .side {
+      border-inline-end: 1px solid var(--line);
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: var(--panel);
+    }
+
+    .side .logo {
+      padding: 0 10px 14px;
+    }
+
+    .side button {
+      background: none;
+      border: 0;
+      text-align: start;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: var(--mu);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+    }
+
+    .side button.on {
+      background: var(--pr2);
+      color: #fff;
+    }
+
+    .tools {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 14px;
+    }
+
+    .main {
+      padding: 26px 4vw;
+      min-width: 0;
+    }
+
+    /* ===== البطاقات والإحصائيات ===== */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stats .card {
+      margin: 0;
+    }
+
+    .stats b {
+      font-size: 26px;
+      display: block;
+      line-height: 1.3;
+    }
+
+    /* ===== الجداول ===== */
+    .tbl {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--mu);
+      font-weight: 600;
+      text-align: start;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: start;
+      vertical-align: top;
+    }
+
+    /* ===== الباقات والفورم ===== */
+    .pm {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 14px;
+    }
+
+    .pm .card {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pm .acts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+    }
+
+    .off {
+      opacity: .55;
+    }
+
+    .fm {
+      display: grid;
+      gap: 14px;
+      max-width: 700px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .fm label.ck {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .fm label.ck input {
+      width: auto;
+    }
+
+    /* ===== الموبايل ===== */
+    @media (max-width: 900px) {
+      .adm {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        flex-direction: row;
+        overflow-x: auto;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .side .logo,
+      .tools {
+        display: none;
+      }
+
+      .side button {
+        white-space: nowrap;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .two {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script>
+    /* =====================================================
+       النصوص: [عربي, English]
+       ===================================================== */
+    const A = {
+      // التبويبات
+      dash: ['الرئيسية', 'Dashboard'],
+      orders: ['الطلبات', 'Orders'],
+      pk: ['الباقات', 'Packages'],
+      cus: ['العملاء', 'Customers'],
+      site: ['إعدادات الموقع', 'Website'],
+
+      // الإحصائيات
+      nOrd: ['كل الطلبات', 'All orders'],
+      nNew: ['طلبات جديدة', 'New orders'],
+      nCus: ['العملاء', 'Customers'],
+      rev: ['إجمالي الأسعار', 'Total (starting prices)'],
+      recent: ['آخر الطلبات', 'Recent orders'],
+
+      // أعمدة الجدول
+      cu: ['العميل', 'Customer'],
+      ph: ['الموبايل', 'Mobile'],
+      biz: ['النشاط', 'Business'],
+      pkg: ['الباقة', 'Package'],
+      st: ['الحالة', 'Status'],
+      dt: ['التاريخ', 'Date'],
+      cnt: ['الطلبات', 'Orders'],
+
+      // حالات الطلب
+      s_new: ['جديد', 'New'],
+      s_progress: ['قيد التنفيذ', 'In progress'],
+      s_done: ['تم التسليم', 'Completed'],
+
+      // أزرار
+      edit: ['تعديل', 'Edit'],
+      hide: ['إخفاء', 'Hide'],
+      show: ['إظهار', 'Show'],
+      del: ['حذف', 'Delete'],
+      sure: ['متأكد؟', 'Sure?'],
+      add: ['+ إضافة باقة', '+ Add package'],
+      save: ['حفظ التغييرات', 'Save changes'],
+      cancel: ['إلغاء', 'Cancel'],
+      saved: ['اتحفظ', 'Saved'],
+      deleted: ['اتمسح', 'Deleted'],
+      empty: ['لا توجد طلبات بعد.', 'No orders yet.'],
+      open: ['فتح الموقع', 'Open website'],
+      reset: ['إرجاع الباقات والإعدادات للأصل', 'Reset packages and settings to defaults'],
+      err: ['حصلت مشكلة، حاول تاني', 'Something went wrong, try again'],
+      lerr: ['الإيميل أو الباسورد غلط', 'Wrong email or password'],
+      login: ['دخول الأدمن', 'Admin login'],
+      email: ['الإيميل', 'Email'],
+      pass: ['الباسورد', 'Password'],
+      enter: ['دخول', 'Sign in'],
+      out: ['تسجيل خروج', 'Sign out'],
+      loading: ['جاري التحميل...', 'Loading...'],
+      noFb: ['Firebase مش شغال هنا. افتح الصفحة من Live Server أو بعد النشر على Firebase Hosting.', 'Firebase is not available here. Open this page from Live Server or after deploying to Firebase Hosting.'],
+
+      // فورم الباقة
+      na: ['اسم الباقة (عربي)', 'Package name (Arabic)'],
+      ne: ['اسم الباقة (إنجليزي)', 'Package name (English)'],
+      da: ['الوصف (عربي)', 'Description (Arabic)'],
+      de: ['الوصف (إنجليزي)', 'Description (English)'],
+      fa: ['المميزات بالعربي (كل ميزة في سطر)', 'Features in Arabic (one per line)'],
+      fe: ['المميزات بالإنجليزي (كل ميزة في سطر)', 'Features in English (one per line)'],
+      usd: ['السعر بالدولار', 'Price in USD'],
+      egp: ['السعر بالجنيه', 'Price in EGP'],
+      img: ['صورة البطاقة', 'Card image'],
+      pop: ['الأكثر طلباً', 'Mark as most popular'],
+      on: ['ظاهرة في الموقع', 'Show on website'],
+
+      // إعدادات الموقع
+      brand: ['اسم البراند', 'Brand name'],
+      wa: ['رقم واتساب بكود الدولة (مثال 201001234567)', 'WhatsApp number with country code (e.g. 201001234567)'],
+      tt: ['رابط تيك توك', 'TikTok link'],
+      fb: ['رابط فيسبوك', 'Facebook link'],
+      ig: ['رابط انستجرام', 'Instagram link'],
+      color: ['اللون الأساسي', 'Main color'],
+
+      // أنواع النشاط
+      t_retail: ['تجارة وبيع', 'Retail'],
+      t_food: ['مطعم أو كافيه', 'Restaurant or cafe'],
+      t_estate: ['عقارات', 'Real estate'],
+      t_services: ['خدمات', 'Services'],
+      t_other: ['أخرى', 'Other']
+    };
+
+    const a = k => (A[k] || [k, k])[lang == 'ar' ? 0 : 1];
+    const pn = id => {
+      const p = PK.find(x => x.id == id);
+      return p ? L(p.n) : id;
+    };
+
+    let tab = 'dash';
+    let edId = '';
+    let arm = '';
+
+    let user = null;
+    let ready = false;
+    let noFb = false;
+
+    // تشغيل أمر على Firebase، ولو فشل بنظهر رسالة
+    const fb = fn => fbReady
+      .then(m => { if (!m) throw new Error('no firebase'); return fn(m); })
+      .catch(e => { console.warn(e); toast(a('err')); });
+
+    // حفظ الباقات وإعدادات الموقع
+    const save = () => fb(m => m.setSite(cl(SITE)).then(() => m.setPackages(cl(PK))));
+
+    // ضغطتين للحذف: الأولى "متأكد؟" والتانية تنفذ
+    function ask(k, fn) {
+      if (arm == k) {
+        arm = '';
+        fn();
+      } else {
+        arm = k;
+        render();
+        setTimeout(() => {
+          if (arm == k) {
+            arm = '';
+            render();
+          }
+        }, 3000);
+      }
+    }
+
+    const fdate = d => new Date(d).toLocaleString(
+      lang == 'ar' ? 'ar-EG' : 'en-GB',
+      { dateStyle: 'medium', timeStyle: 'short' }
+    );
+
+    /* =====================================================
+       الطلبات
+       ===================================================== */
+    const stSel = o => `
+      <select aria-label="${a('st')}" onchange="setSt('${o.id}', this.value)" style="width:auto;padding:4px 8px">
+        ${['new', 'progress', 'done'].map(k => `
+          <option value="${k}" ${o.st == k ? 'selected' : ''}>${a('s_' + k)}</option>
+        `).join('')}
+      </select>`;
+
+    function setSt(id, v) {
+      OR.find(o => o.id == id).st = v;
+      fb(m => m.patchOrder(id, { st: v }));
+      render();
+    }
+
+    function delOrder(id) {
+      OR = OR.filter(o => o.id != id);
+      fb(m => m.removeOrder(id));
+      render();
+      toast(a('deleted'));
+    }
+
+    function delBtn(k, fn) {
+      return `<button class="btn sm red" onclick="ask('${k}', () => ${fn})">${arm == k ? a('sure') : a('del')}</button>`;
+    }
+
+    function ordTable(l) {
+      if (!l.length) return `<p class="mu">${a('empty')}</p>`;
+
+      const rows = l.map(o => `
+        <tr>
+          <td>${o.id}</td>
+          <td>${esc(o.cu)}</td>
+          <td dir="ltr">
+            <a href="${waLink(o.ph)}" target="_blank" rel="noopener" style="color:var(--ok);font-weight:700">${esc(o.ph)}</a>
+          </td>
+          <td title="${esc(o.det)}">
+            ${esc(o.biz)}
+            <br><span class="mu">${a('t_' + o.ty)}</span>
+            ${o.det ? `<br><span class="mu">${esc(o.det)}</span>` : ''}
+          </td>
+          <td>${esc(pn(o.pk))}</td>
+          <td>${stSel(o)}</td>
+          <td>${fdate(o.d)}</td>
+          <td>${delBtn('o' + o.id, `delOrder('${o.id}')`)}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div class="tbl">
+          <table>
+            <tr>
+              <th>#</th>
+              <th>${a('cu')}</th>
+              <th>${a('ph')}</th>
+              <th>${a('biz')}</th>
+              <th>${a('pkg')}</th>
+              <th>${a('st')}</th>
+              <th>${a('dt')}</th>
+              <th></th>
+            </tr>
+            ${rows}
+          </table>
+        </div>`;
+    }
+
+    /* =====================================================
+       الباقات
+       ===================================================== */
+    function pkMgr() {
+      const cards = PK.map(p => `
+        <div class="card ${p.on ? '' : 'off'}">
+          <b>${esc(L(p.n))}</b>
+          <span class="mu" style="font-size:13px">${esc(L(p.d))}</span>
+          <b style="font-size:20px">$${p.usd}+ · ${Number(p.egp).toLocaleString('en-US')} ${t('egp')}+</b>
+          <div class="acts">
+            <button class="btn sm" onclick="edId='${p.id}'; tab='pk'; render()">${a('edit')}</button>
+            <button class="btn sm ghost" onclick="togPk('${p.id}')">${p.on ? a('hide') : a('show')}</button>
+            ${delBtn('p' + p.id, `delPk('${p.id}')`)}
+          </div>
+        </div>
+      `).join('');
+
+      return `<div class="pm">${cards}</div>`;
+    }
+
+    function togPk(id) {
+      const p = PK.find(x => x.id == id);
+      p.on = p.on ? 0 : 1;
+      save();
+      render();
+    }
+
+    function delPk(id) {
+      PK = PK.filter(p => p.id != id);
+      save();
+      render();
+      toast(a('deleted'));
+    }
+
+    function addPk() {
+      const id = 'p' + Date.now();
+      PK.push({
+        id,
+        img: 'basic',
+        usd: 100,
+        egp: 5000,
+        on: 1,
+        n: { ar: 'باقة جديدة', en: 'New package' },
+        d: { ar: '', en: '' },
+        f: { ar: [], en: [] }
+      });
+      save();
+      edId = id;
+      render();
+    }
+
+    const val = id => $('#' + id).value.trim();
+    const lines = id => $('#' + id).value.split('\n').map(s => s.trim()).filter(Boolean);
+
+    function savePk() {
+      const p = PK.find(x => x.id == edId);
+
+      p.n = { ar: val('na'), en: val('ne') };
+      p.d = { ar: val('da'), en: val('de') };
+      p.f = { ar: lines('fa'), en: lines('fe') };
+
+      p.usd = Number(val('usd')) > 0 ? Number(val('usd')) : p.usd;
+      p.egp = Number(val('egp')) > 0 ? Number(val('egp')) : p.egp;
+      p.img = $('#img').value;
+      p.pop = $('#pop').checked ? 1 : 0;
+      p.on = $('#on').checked ? 1 : 0;
+
+      // باقة واحدة بس "الأكثر طلباً"
+      if (p.pop) PK.forEach(x => { if (x !== p) x.pop = 0; });
+
+      save();
+      edId = '';
+      render();
+      toast(a('saved'));
+    }
+
+    function pkForm() {
+      const p = PK.find(x => x.id == edId);
+      if (!p) {
+        edId = '';
+        return pkMgr();
+      }
+
+      const I = (id, k, v, ex = '') => `
+        <div>
+          <label for="${id}">${a(k)}</label>
+          <input id="${id}" value="${esc(v)}" ${ex}>
+        </div>`;
+
+      const TA = (id, k, v) => `
+        <div>
+          <label for="${id}">${a(k)}</label>
+          <textarea id="${id}" rows="5">${esc(v)}</textarea>
+        </div>`;
+
+      const imgs = ['basic', 'business', 'ecom', 'premium']
+        .map(k => `<option value="${k}" ${p.img == k ? 'selected' : ''}>${k}</option>`)
+        .join('');
+
+      return `
+        <div class="card fm">
+          <div class="two">
+            ${I('na', 'na', p.n.ar)}
+            ${I('ne', 'ne', p.n.en, 'dir="ltr"')}
+          </div>
+
+          <div class="two">
+            ${I('da', 'da', p.d.ar)}
+            ${I('de', 'de', p.d.en, 'dir="ltr"')}
+          </div>
+
+          <div class="two">
+            ${TA('fa', 'fa', (p.f.ar || []).join('\n'))}
+            ${TA('fe', 'fe', (p.f.en || []).join('\n'))}
+          </div>
+
+          <div class="two">
+            ${I('usd', 'usd', p.usd, 'type="number" min="1" dir="ltr"')}
+            ${I('egp', 'egp', p.egp, 'type="number" min="1" dir="ltr"')}
+          </div>
+
+          <div>
+            <label for="img">${a('img')}</label>
+            <select id="img">${imgs}</select>
+          </div>
+
+          <label class="ck"><input type="checkbox" id="pop" ${p.pop ? 'checked' : ''}> ${a('pop')}</label>
+          <label class="ck"><input type="checkbox" id="on" ${p.on ? 'checked' : ''}> ${a('on')}</label>
+
+          <div style="display:flex;gap:10px">
+            <button class="btn" onclick="savePk()">${a('save')}</button>
+            <button class="btn ghost" onclick="edId=''; render()">${a('cancel')}</button>
+          </div>
+        </div>`;
+    }
+
+    /* =====================================================
+       إعدادات الموقع
+       ===================================================== */
+    function saveSite() {
+      // لو الرابط من غير https:// بنضيفها
+      const lk = v => (v && !/^https?:\/\//i.test(v)) ? 'https://' + v : v;
+
+      SITE.brand = val('sb') || SITE.brand;
+      SITE.wa = val('sw').replace(/\D/g, '');
+      SITE.tt = lk(val('stt'));
+      SITE.fb = lk(val('sfb'));
+      SITE.ig = lk(val('sig'));
+      SITE.color = $('#sc').value;
+
+      save();
+      apply();
+      render();
+      toast(a('saved'));
+    }
+
+    function resetAll() {
+      PK = cl(PK0);
+      SITE = cl(S0);
+      save();
+      apply();
+      render();
+      toast(a('deleted'));
+    }
+
+    function siteForm() {
+      const I = (id, k, v, ex = '') => `
+        <div>
+          <label for="${id}">${a(k)}</label>
+          <input id="${id}" value="${esc(v)}" ${ex}>
+        </div>`;
+
+      return `
+        <div class="card fm">
+          ${I('sb', 'brand', SITE.brand, 'dir="ltr"')}
+          ${I('sw', 'wa', SITE.wa, 'dir="ltr" inputmode="tel"')}
+          ${I('stt', 'tt', SITE.tt, 'dir="ltr" placeholder="https://www.tiktok.com/@..."')}
+          ${I('sfb', 'fb', SITE.fb, 'dir="ltr" placeholder="https://www.facebook.com/..."')}
+          ${I('sig', 'ig', SITE.ig, 'dir="ltr" placeholder="https://www.instagram.com/..."')}
+
+          <div>
+            <label for="sc">${a('color')}</label>
+            <input id="sc" type="color" value="${SITE.color}" style="height:44px;padding:4px">
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" onclick="saveSite()">${a('save')}</button>
+            ${delBtn('reset', 'resetAll()').replace(a('del'), a('reset'))}
+          </div>
+        </div>`;
+    }
+
+    /* =====================================================
+       العملاء
+       ===================================================== */
+    function customersView() {
+      const m = {};
+      OR.forEach(o => {
+        const k = o.ph.replace(/\D/g, '');
+        m[k] = m[k] || { n: o.cu, ph: o.ph, b: o.biz, c: 0 };
+        m[k].c++;
+      });
+      const r = Object.values(m);
+
+      if (!r.length) return `<div class="card"><p class="mu">${a('empty')}</p></div>`;
+
+      const rows = r.map(v => `
+        <tr>
+          <td>${esc(v.n)}</td>
+          <td dir="ltr">
+            <a href="${waLink(v.ph)}" target="_blank" rel="noopener" style="color:var(--ok);font-weight:700">${esc(v.ph)}</a>
+          </td>
+          <td>${esc(v.b)}</td>
+          <td>${v.c}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div class="card">
+          <div class="tbl">
+            <table>
+              <tr>
+                <th>${a('cu')}</th>
+                <th>${a('ph')}</th>
+                <th>${a('biz')}</th>
+                <th>${a('cnt')}</th>
+              </tr>
+              ${rows}
+            </table>
+          </div>
+        </div>`;
+    }
+
+    /* =====================================================
+       الصفحة الرئيسية للوحة + اختيار التبويب
+       ===================================================== */
+    function dashView() {
+      const priceOf = (o, f) => (PK.find(p => p.id == o.pk) || {})[f] || 0;
+      const usd = OR.reduce((s, o) => s + priceOf(o, 'usd'), 0);
+      const egp = OR.reduce((s, o) => s + priceOf(o, 'egp'), 0);
+      const newCount = OR.filter(o => o.st == 'new').length;
+      const custCount = new Set(OR.map(o => o.ph.replace(/\D/g, ''))).size;
+
+      return `
+        <div class="stats">
+          <div class="card"><span class="mu">${a('nOrd')}</span><b>${OR.length}</b></div>
+          <div class="card"><span class="mu">${a('nNew')}</span><b>${newCount}</b></div>
+          <div class="card"><span class="mu">${a('nCus')}</span><b>${custCount}</b></div>
+          <div class="card">
+            <span class="mu">${a('rev')}</span>
+            <b>$${usd}</b>
+            <span class="mu">${egp.toLocaleString('en-US')} ${t('egp')}</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <b style="display:block;margin-bottom:10px">${a('recent')}</b>
+          ${ordTable(OR.slice(0, 5))}
+        </div>
+
+        <div class="card">
+          <b style="display:block;margin-bottom:12px">${a('pk')}</b>
+          ${pkMgr()}
+        </div>`;
+    }
+
+    function body() {
+      if (tab == 'orders') return `<div class="card">${ordTable(OR)}</div>`;
+      if (tab == 'pk') return edId ? pkForm() : `<button class="btn" style="margin-bottom:14px" onclick="addPk()">${a('add')}</button>${pkMgr()}`;
+      if (tab == 'site') return siteForm();
+      if (tab == 'cus') return customersView();
+      return dashView();
+    }
+
+    /* ===== تسجيل الدخول ===== */
+    async function doLogin() {
+      const m = await fbReady;
+      $('#lerr').textContent = '';
+      try {
+        await m.login($('#le').value.trim(), $('#lp').value);
+      } catch (e) {
+        $('#lerr').textContent = a('lerr');
+      }
+    }
+
+    function logout() {
+      fbReady.then(m => m && m.logout());
+    }
+
+    async function loadAdminData(m) {
+      try {
+        const [s, pk, orders] = await Promise.all([m.getSite(), m.getPackages(), m.getOrders()]);
+        if (s) SITE = Object.assign(cl(S0), s);
+        if (pk && pk.length) PK = pk;
+        OR = orders;
+        apply();
+      } catch (e) {
+        console.warn(e);
+        toast(a('err'));
+      }
+    }
+
+    function render() {
+      if (!ready) {
+        $('#app').innerHTML = `<p class="mu" style="padding:40px;text-align:center">${a('loading')}</p>`;
+        return;
+      }
+      if (!user) {
+        $('#app').innerHTML = `
+          <div style="min-height:100vh;display:grid;place-items:center;padding:20px">
+            <div class="card fm" style="width:100%;max-width:400px">
+              <h2 style="margin:0">${a('login')}</h2>
+              ${noFb ? `<p class="err">${a('noFb')}</p>` : ''}
+              <div><label for="le">${a('email')}</label><input id="le" type="email" dir="ltr" autocomplete="username"></div>
+              <div><label for="lp">${a('pass')}</label><input id="lp" type="password" dir="ltr" autocomplete="current-password" onkeydown="if(event.key=='Enter')doLogin()"></div>
+              <button class="btn" onclick="doLogin()">${a('enter')}</button>
+              <div class="err" id="lerr"></div>
+              <div style="display:flex;gap:8px">
+                <button class="ib" onclick="setLang()" aria-label="Language">${lang == 'ar' ? 'EN' : 'عربي'}</button>
+                <button class="ib" onclick="setTheme()" aria-label="Theme">${theme == 'dark' ? '☀' : '☾'}</button>
+              </div>
+            </div>
+          </div>`;
+        return;
+      }
+      renderPanel();
+    }
+
+    function renderPanel() {
+      const nav = ['dash', 'orders', 'pk', 'cus', 'site'];
+
+      const navButtons = nav.map(k => `
+        <button class="${tab == k ? 'on' : ''}" onclick="tab='${k}'; edId=''; render()">
+          ${a(k)}${k == 'orders' ? `<span>${OR.length}</span>` : ''}
+        </button>
+      `).join('');
+
+      $('#app').innerHTML = `
+        <div class="adm">
+          <aside class="side">
+            <div class="logo">&lt;/&gt; ${esc(SITE.brand)}</div>
+            ${navButtons}
+            <button onclick="logout()">${a('out')}</button>
+            <div class="tools">
+              <button class="ib" onclick="setLang()" aria-label="Language">${lang == 'ar' ? 'EN' : 'عربي'}</button>
+              <button class="ib" onclick="setTheme()" aria-label="Theme">${theme == 'dark' ? '☀' : '☾'}</button>
+              <a class="btn sm" style="margin-inline-start:auto;align-self:center" href="index.html">${a('open')}</a>
+            </div>
+          </aside>
+
+          <main class="main">
+            <h2 style="text-align:start;margin-bottom:20px">${a(tab)}</h2>
+            ${body()}
+          </main>
+        </div>`;
+    }
+
+    // تشغيل Firebase ومتابعة حالة الدخول
+    render();
+    fbReady.then(m => {
+      if (!m) {
+        noFb = true;
+        ready = true;
+        render();
+        return;
+      }
+      m.onUser(async u => {
+        user = u;
+        ready = true;
+        if (u) await loadAdminData(m);
+        render();
+      });
+    });
+  </script>
+</body>
+</html>

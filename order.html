@@ -1,0 +1,24 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="shared.css"><script src="shared.js"></script><title>Order</title></head><body><div id="app"></div>
+<script>
+let fv={p:new URLSearchParams(location.search).get('p')||'business'},done='';
+function keep(){['n','ph','b','t','p','d'].forEach(k=>{const e=$('#'+k);if(e)fv[k]=e.value})}
+async function submit(){keep();const ph=(fv.ph||'').replace(/\D/g,'');
+if(!(fv.n||'').trim()||!(fv.b||'').trim()||ph.length<10){$('#er').textContent=t('err');return}
+const btn=$('#sendBtn');btn.disabled=true;
+const id=String(Date.now()).slice(-6)+String(Math.floor(Math.random()*90)+10);
+const o={id,cu:fv.n.trim(),ph:fv.ph.trim(),biz:fv.b.trim(),ty:fv.t||'other',pk:fv.p||'',det:(fv.d||'').trim(),st:'new',d:new Date().toISOString()};
+try{const m=await fbReady;if(!m)throw new Error('no firebase');await m.addOrder(o)}catch(e){console.warn(e);btn.disabled=false;$('#er').textContent=t('netErr');return}
+done=id;render()}
+function render(){keep();document.title=SITE.brand;let b;
+if(done)b=`<div class="wrap thanks"><div class="chk">✓</div><h1 style="font-size:40px">${t('thx')}</h1><p class="mu">${t('thxS')}</p><div class="oid">#ORD-${done}</div><div class="acts" style="justify-content:center"><a class="btn" href="index.html">${t('back')}</a>${SITE.wa?`<a class="btn ghost" href="https://wa.me/${esc(SITE.wa)}" target="_blank" rel="noopener">${t('wa')}</a>`:''}</div></div>`;
+else b=`<div class="wrap"><h2>${t('oH')}</h2><p class="mu" style="text-align:center;margin:0">${t('oS')}</p><div class="form">
+<div><label for="n">${t('n')}</label><input id="n" value="${esc(fv.n)}" placeholder="${t('np')}" autocomplete="name"></div>
+<div><label for="ph">${t('ph')}</label><input id="ph" type="tel" inputmode="tel" dir="ltr" value="${esc(fv.ph)}" placeholder="01XXXXXXXXX" autocomplete="tel"><div class="note">${t('phn')}</div></div>
+<div><label for="b">${t('b')}</label><input id="b" value="${esc(fv.b)}" placeholder="${t('bp')}"></div>
+<div><label for="t">${t('t')}</label><select id="t">${Object.entries(t('ty')).map(([k,v])=>`<option value="${k}" ${fv.t==k?'selected':''}>${v}</option>`).join('')}</select></div>
+<div class="full"><label for="p">${t('p')}</label><select id="p">${PK.filter(p=>p.on).map(p=>`<option value="${esc(p.id)}" ${fv.p==p.id?'selected':''}>${esc(L(p.n))} - $${p.usd}+ / ${Number(p.egp).toLocaleString('en-US')} ${t('egp')}+</option>`).join('')}</select></div>
+<div class="full"><label for="d">${t('d')}</label><textarea id="d" rows="3" placeholder="${t('dp')}">${esc(fv.d)}</textarea></div>
+<div class="full"><button class="btn" id="sendBtn" style="width:100%" onclick="submit()">${t('send')}</button><div class="err" id="er"></div></div></div></div>`;
+$('#app').innerHTML=hdr('order')+b+foot()}
+render();loadRemote().then(render);
+</script></body></html>

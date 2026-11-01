@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#241d57"/><stop offset="1" stop-color="#0e0b2b"/></linearGradient>
+<radialGradient id="gl"><stop offset="0" stop-color="#8b5cf6" stop-opacity=".5"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+<linearGradient id="pr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#6d3df0"/></linearGradient>
+<linearGradient id="gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs>
+<rect width="600" height="400" rx="28" fill="url(#bg)"/><circle cx="300" cy="200" r="190" fill="url(#gl)"/><path d="M135,112 H182 L204,160" fill="none" stroke="#c4b5fd" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="245" y="95" width="62" height="60" rx="7" fill="#f59e0b"/><rect x="245" y="95" width="62" height="14" rx="5" fill="#fbbf24"/><rect x="322" y="78" width="56" height="77" rx="8" fill="#22c55e"/><rect x="334" y="92" width="32" height="8" rx="4" fill="#bbf7d0"/><path d="M398,128 q0,-16 22,-16 q22,0 22,16 v27 h-44z" fill="#3b82f6"/>
+<path d="M200,155 H468 L432,258 H228 Z" fill="url(#pr)" stroke="#c4b5fd" stroke-width="4" stroke-linejoin="round"/><path d="M270,160 L278,254 M335,160 L335,254 M400,160 L392,254" stroke="#4c2bc0" stroke-width="5"/>
+<circle cx="256" cy="298" r="19" fill="#f1f0ff"/><circle cx="256" cy="298" r="7" fill="#6d3df0"/><circle cx="406" cy="298" r="19" fill="#f1f0ff"/><circle cx="406" cy="298" r="7" fill="#6d3df0"/>
+<g transform="translate(488,92) rotate(14)"><rect x="-34" y="-20" width="68" height="40" rx="10" fill="#fff"/><circle cx="-20" cy="0" r="5" fill="#6d3df0"/><text x="8" y="8" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="24" fill="#6d3df0">$</text></g><path transform="translate(110,300) scale(0.7)" d="M0,-14 Q2,-2 14,0 Q2,2 0,14 Q-2,2 -14,0 Q-2,-2 0,-14Z" fill="#fff" opacity="0.6"/></svg>
