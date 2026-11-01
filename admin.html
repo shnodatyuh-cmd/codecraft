@@ -741,7 +741,8 @@
           </aside>
 
           <main class="main">
-            <h2 style="text-align:start;margin-bottom:20px">${a(tab)}</h2>
+            <h2 style="text-align:start;margin-bottom:6px">${a(tab)}</h2>
+            <p class="mu" dir="ltr" style="margin:0 0 18px;font-size:12px;text-align:start">${esc(user.email || '')} · UID: ${esc(user.uid || '')}</p>
             ${body()}
           </main>
         </div>`;
