@@ -7,7 +7,7 @@ if(!(fv.n||'').trim()||!(fv.b||'').trim()||ph.length<10){$('#er').textContent=t(
 const btn=$('#sendBtn');btn.disabled=true;
 const id=String(Date.now()).slice(-6)+String(Math.floor(Math.random()*90)+10);
 const o={id,cu:fv.n.trim(),ph:fv.ph.trim(),biz:fv.b.trim(),ty:fv.t||'other',pk:fv.p||'',det:(fv.d||'').trim(),st:'new',d:new Date().toISOString()};
-try{const m=await fbReady;if(!m)throw new Error('no firebase');await m.addOrder(o)}catch(e){console.warn(e);btn.disabled=false;$('#er').textContent=t('netErr');return}
+try{const m=await fbReady;if(!m)throw new Error('no firebase');await m.addOrder(o)}catch(e){console.warn(e);btn.disabled=false;$('#er').textContent=t('netErr')+' ('+(e.code||e.message)+')';return}
 done=id;render()}
 function render(){keep();document.title=SITE.brand;let b;
 if(done)b=`<div class="wrap thanks"><div class="chk">✓</div><h1 style="font-size:40px">${t('thx')}</h1><p class="mu">${t('thxS')}</p><div class="oid">#ORD-${done}</div><div class="acts" style="justify-content:center"><a class="btn" href="index.html">${t('back')}</a>${SITE.wa?`<a class="btn ghost" href="https://wa.me/${esc(SITE.wa)}" target="_blank" rel="noopener">${t('wa')}</a>`:''}</div></div>`;

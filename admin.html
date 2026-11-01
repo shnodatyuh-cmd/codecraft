@@ -296,7 +296,7 @@
     // تشغيل أمر على Firebase، ولو فشل بنظهر رسالة
     const fb = fn => fbReady
       .then(m => { if (!m) throw new Error('no firebase'); return fn(m); })
-      .catch(e => { console.warn(e); toast(a('err')); });
+      .catch(e => { console.warn(e); toast(a('err') + ' (' + (e.code || e.message) + ')', 6000); });
 
     // حفظ الباقات وإعدادات الموقع
     const save = () => fb(m => m.setSite(cl(SITE)).then(() => m.setPackages(cl(PK))));
@@ -671,7 +671,7 @@
       try {
         await m.login($('#le').value.trim(), $('#lp').value);
       } catch (e) {
-        $('#lerr').textContent = a('lerr');
+        $('#lerr').textContent = a('lerr') + ' (' + (e.code || e.message) + ')';
       }
     }
 
@@ -688,7 +688,7 @@
         apply();
       } catch (e) {
         console.warn(e);
-        toast(a('err'));
+        toast(a('err') + ' (' + (e.code || e.message) + ')', 6000);
       }
     }
 
@@ -702,7 +702,7 @@
           <div style="min-height:100vh;display:grid;place-items:center;padding:20px">
             <div class="card fm" style="width:100%;max-width:400px">
               <h2 style="margin:0">${a('login')}</h2>
-              ${noFb ? `<p class="err">${a('noFb')}</p>` : ''}
+              ${noFb ? `<p class="err">${a('noFb')}<br><small dir="ltr">${esc(fbErr ? fbErr.message : '')}</small></p>` : ''}
               <div><label for="le">${a('email')}</label><input id="le" type="email" dir="ltr" autocomplete="username"></div>
               <div><label for="lp">${a('pass')}</label><input id="lp" type="password" dir="ltr" autocomplete="current-password" onkeydown="if(event.key=='Enter')doLogin()"></div>
               <button class="btn" onclick="doLogin()">${a('enter')}</button>
